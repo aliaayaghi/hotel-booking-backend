@@ -2,8 +2,6 @@ package com.HotelBook.HotelBooking.room;
 
 
 
-import com.hotelapp.room.dto.RoomRequestDTO;
-import com.hotelapp.room.dto.RoomResponseDTO;
 
 import java.util.List;
 import java.util.UUID;

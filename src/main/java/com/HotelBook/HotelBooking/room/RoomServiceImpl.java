@@ -1,8 +1,7 @@
 package com.HotelBook.HotelBooking.room;
 
 
-import com.hotelapp.room.dto.RoomRequestDTO;
-import com.hotelapp.room.dto.RoomResponseDTO;
+
 import com.hotelapp.roomaccessibility.RoomAccessibility;
 import com.hotelapp.roomamenity.RoomAmenity;
 import com.hotelapp.roomphoto.RoomPhoto;
