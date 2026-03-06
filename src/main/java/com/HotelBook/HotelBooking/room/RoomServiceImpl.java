@@ -2,9 +2,8 @@ package com.HotelBook.HotelBooking.room;
 
 
 
-import com.hotelapp.roomaccessibility.RoomAccessibility;
-import com.hotelapp.roomamenity.RoomAmenity;
-import com.hotelapp.roomphoto.RoomPhoto;
+
+import com.HotelBook.HotelBooking.roomphoto.RoomPhoto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
