@@ -2,9 +2,10 @@ package com.HotelBook.HotelBooking.room;
 
 
 
+import com.HotelBook.HotelBooking.roomphoto.RoomPhoto;
 import com.hotelapp.roomaccessibility.RoomAccessibility;
 import com.hotelapp.roomamenity.RoomAmenity;
-import com.hotelapp.roomphoto.RoomPhoto;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
