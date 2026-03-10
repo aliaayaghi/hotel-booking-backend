@@ -23,16 +23,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity          // enables @PreAuthorize on controller methods
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
-    private final CustomUserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+
+   private final JwtAuthenticationFilter jwtAuthFilter;           // @Component
+    private final CustomUserDetailsService userDetailsService;     // @Service
+    private final PasswordEncoder passwordEncoder;                 // @Bean from PasswordEncoderConfig
 
     private static final String[] PUBLIC_POST_PATHS = {
             "/api/auth/register",
@@ -41,7 +41,7 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_GET_PATHS = {
             "/api/hotels",
-            "/api/hotels/**",          // GET hotel detail, photos, amenities, etc.
+            "/api/hotels/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api-docs/**",
@@ -53,21 +53,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(auth -> auth
-
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST_PATHS).permitAll()
-                        .requestMatchers(HttpMethod.GET,  PUBLIC_GET_PATHS).permitAll()
-
+                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_PATHS).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
                         .requestMatchers(HttpMethod.POST, "/api/hotels").hasRole("HOTEL_MANAGER")
-                        .requestMatchers(HttpMethod.PUT,  "/api/hotels/**").hasRole("HOTEL_MANAGER")
-
+                        .requestMatchers(HttpMethod.PUT, "/api/hotels/**").hasRole("HOTEL_MANAGER")
                         .requestMatchers("/api/customers/me/**").hasRole("CUSTOMER")
-
                         .anyRequest().authenticated()
                 )
 
@@ -76,15 +70,12 @@ public class SecurityConfig {
                 )
 
                 .authenticationProvider(authenticationProvider())
-
-                // ── Add JWT filter BEFORE the standard username/password filter ─
-                // This ensures our filter runs first and populates SecurityContext
-                // before Spring's own auth mechanism tries to process the request.
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    // ── AuthenticationProvider ─────────────────────────────────────────────────
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -103,21 +94,14 @@ public class SecurityConfig {
     }
 
 
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOriginPatterns(List.of("*"));
-
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
         config.setAllowedHeaders(List.of("*"));
-
         config.setExposedHeaders(List.of("Authorization"));
-
         config.setAllowCredentials(true);
-
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
