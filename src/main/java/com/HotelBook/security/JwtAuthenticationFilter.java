@@ -1,8 +1,5 @@
 package com.HotelBook.security;
 
-
-import com.HotelBook.security.CustomUserDetailsService;
-import com.HotelBook.security.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -29,18 +25,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
-
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-
-        final String jwt = extractJwtFromRequest(request);
-
+        final String jwt = extractJwt(request);
 
         if (jwt == null) {
             filterChain.doFilter(request, response);
@@ -48,7 +39,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (!jwtUtil.validateTokenStructure(jwt)) {
-            log.debug("Invalid JWT token structure for request: {}", request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
@@ -62,14 +52,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails;
             try {
                 userDetails = userDetailsService.loadUserByUsername(email);
             } catch (Exception e) {
-                log.warn("User from JWT token not found in database: {}", email);
+                log.warn("User from token not found in DB: {}", email);
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -79,37 +68,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
-                                null,                          // credentials — null after auth
-                                userDetails.getAuthorities()   // roles/permissions
+                                null,
+                                userDetails.getAuthorities()
                         );
-
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-
-
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-
-                log.debug("Authenticated user '{}' for request: {}", email, request.getRequestURI());
-            } else {
-                log.debug("JWT token is not valid for user: {}", email);
             }
         }
 
         filterChain.doFilter(request, response);
     }
-
-
-    private String extractJwtFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.substring(BEARER_PREFIX.length());
-        }
-
-        return null;
-    }
-
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -117,7 +85,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return path.equals("/api/auth/login")
                 || path.equals("/api/auth/register")
                 || path.startsWith("/swagger-ui")
-                || path.startsWith("/api-docs")
-                || path.startsWith("/v3/api-docs");
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/api-docs");
+    }
+
+    private String extractJwt(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        return null;
     }
 }
