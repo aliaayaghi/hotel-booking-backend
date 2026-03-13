@@ -2,11 +2,7 @@ package com.HotelBook.catalog.admin;
 
 
 import com.HotelBook.catalog.admin.*;
-import com.HotelBook.catalog.hotel.dto.response.HotelResponse;
-import com.HotelBook.catalog.hotel.entity.Hotel;
-import com.HotelBook.catalog.hotel.enums.HotelStatus;
-import com.HotelBook.catalog.hotel.mapper.HotelMapper;
-import com.HotelBook.catalog.hotel.repository.HotelRepository;
+import com.HotelBook.catalog.hotel.*;
 import com.HotelBook.catalog.user.dto.response.UserResponse;
 import com.HotelBook.catalog.user.entity.User;
 import com.HotelBook.catalog.user.enums.UserRole;
