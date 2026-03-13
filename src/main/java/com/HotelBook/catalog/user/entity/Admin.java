@@ -1,10 +1,7 @@
 package com.HotelBook.catalog.user.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -17,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Admin {
 
-     @Id
+    @Id
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -25,7 +22,7 @@ public class Admin {
     @JoinColumn(name = "id")
     private User user;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    // Use plain TEXT instead of JSON for MySQL 5.x compatibility
+    @Column(columnDefinition = "TEXT")
     private String permissions;
 }

@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Configuration
@@ -55,20 +55,39 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+                // ── ADD THIS BLOCK ──────────────────────────────────────────────────
+                .exceptionHandling(ex -> ex
+                        // 401 when request has no token or token is invalid
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write(
+                                    "{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}"
+                            );
+                        })
+                        // 403 when token is valid but role is insufficient
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write(
+                                    "{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied — insufficient role\"}"
+                            );
+                        })
+                )
+                // ───────────────────────────────────────────────────────────────────
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST_PATHS).permitAll()
-                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_PATHS).permitAll()
+                        .requestMatchers(HttpMethod.GET,  PUBLIC_GET_PATHS).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/hotels").hasRole("HOTEL_MANAGER")
-                        .requestMatchers(HttpMethod.PUT, "/api/hotels/**").hasRole("HOTEL_MANAGER")
+                        .requestMatchers(HttpMethod.PUT,  "/api/hotels/**").hasRole("HOTEL_MANAGER")
                         .requestMatchers("/api/customers/me/**").hasRole("CUSTOMER")
                         .anyRequest().authenticated()
                 )
-
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
