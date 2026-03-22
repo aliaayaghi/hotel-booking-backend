@@ -1,6 +1,7 @@
 package com.HotelBook.catalog.hotel;
 
-
+import com.HotelBook.catalog.location.LocationAlreadyExistsException;
+import com.HotelBook.catalog.location.LocationNotFoundException;
 import com.HotelBook.catalog.user.exception.DuplicateEmailException;
 import com.HotelBook.catalog.user.exception.InvalidCredentialsException;
 import com.HotelBook.catalog.user.exception.ResourceNotFoundException;
@@ -154,4 +155,29 @@ public class GlobalExceptionHandler {
             String error,
             String message
     ) {}
+
+    @ExceptionHandler(LocationAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleLocationAlreadyExists(LocationAlreadyExistsException ex) {
+        return error(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(LocationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleLocationNotFound(LocationNotFoundException ex) {
+        return error(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException ex) {
+
+        String message = ex.getConstraintViolations()
+                .stream()
+                .map(v -> v.getPropertyPath().toString()
+                        .replaceAll(".*\\.", "")
+                        + ": " + v.getMessage())
+                .findFirst()
+                .orElse("Invalid request parameter");
+
+        return error(HttpStatus.BAD_REQUEST, message);
+    }
 }
