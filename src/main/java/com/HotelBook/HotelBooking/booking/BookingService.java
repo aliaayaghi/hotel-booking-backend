@@ -78,7 +78,7 @@ public class BookingService {
        int roomCount = request.getRoomCount() != null ? request.getRoomCount() : 1;
 
         boolean available = availabilityService.isAvailable(
-                room.getId(),
+                room,
                 request.getCheckInDate(),
                 request.getCheckOutDate(),
                 roomCount,
