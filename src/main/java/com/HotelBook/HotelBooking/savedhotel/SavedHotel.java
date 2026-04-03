@@ -1,16 +1,22 @@
 package com.HotelBook.HotelBooking.savedhotel;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * SavedHotel — customer wishlist/favourites.
+ *
+ * Owned by M2 (savedhotel package).
+ * M1's CustomerServiceImpl reads/writes via SavedHotelRepository.
+ * No @ManyToOne joins — module independence via plain UUIDs.
+ */
 @Entity
 @Table(
-        name = "saved_hotel",
+        name = "saved_hotels",
         uniqueConstraints = @UniqueConstraint(
                 name = "uq_saved_hotel_customer_hotel",
                 columnNames = {"customer_id", "hotel_id"}
@@ -20,7 +26,11 @@ import java.util.UUID;
                 @Index(name = "idx_saved_hotel_hotel",    columnList = "hotel_id")
         }
 )
-@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SavedHotel {
 
     @Id
@@ -28,25 +38,17 @@ public class SavedHotel {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    /**
-     * FK to customer/user — who saved this hotel.
-     * Plain UUID — no @ManyToOne (module independence from Member 1).
-     */
     @Column(name = "customer_id", nullable = false, updatable = false)
     private UUID customerId;
 
-    /**
-     * FK to hotel — which hotel was saved.
-     * Plain UUID — no @ManyToOne (module independence from Member 1).
-     */
     @Column(name = "hotel_id", nullable = false, updatable = false)
     private UUID hotelId;
 
-
+    /** Optional personal note — e.g. "Visit in summer". Max 500 chars. */
     @Column(length = 500)
     private String notes;
 
-   @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
-    private LocalDateTime createdAt;
+    @CreationTimestamp
+    @Column(name = "saved_at", updatable = false, nullable = false)
+    private Instant savedAt;
 }

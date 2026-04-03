@@ -12,6 +12,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.HotelBook.HotelBooking.savedhotel.SavedHotel;
+import com.HotelBook.HotelBooking.savedhotel.SavedHotelRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
