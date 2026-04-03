@@ -100,12 +100,12 @@ public class Hotel {
     @UpdateTimestamp
     private Instant updatedAt;
 
-    @OneToOne(mappedBy = "hotelId", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY)
     private BreakfastPolicy breakfastPolicy;
 
-    @OneToOne(mappedBy = "hotelId", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY)
     private PetPolicy petPolicy;
 
-    @OneToMany(mappedBy = "hotelId", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
     private List<HotelAmenity> amenities;
 }
