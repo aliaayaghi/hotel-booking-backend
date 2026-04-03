@@ -2,6 +2,7 @@ package com.HotelBook.catalog.hotel;
 
 import com.HotelBook.catalog.location.LocationAlreadyExistsException;
 import com.HotelBook.catalog.location.LocationNotFoundException;
+
 import com.HotelBook.catalog.user.exception.DuplicateEmailException;
 import com.HotelBook.catalog.user.exception.InvalidCredentialsException;
 import com.HotelBook.catalog.user.exception.ResourceNotFoundException;
