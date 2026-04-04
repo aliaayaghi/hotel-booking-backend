@@ -80,7 +80,7 @@ public class Notification {
     // JSON metadata: {"bookingId": "uuid", "paymentId": "uuid"}
     // Allows traceability back to the booking/payment that triggered this notification
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(columnDefinition = "TEXT")
     private String metadata;
 
     @CreationTimestamp
