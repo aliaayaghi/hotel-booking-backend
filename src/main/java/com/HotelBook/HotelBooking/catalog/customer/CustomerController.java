@@ -10,7 +10,6 @@ import com.HotelBook.HotelBooking.savedhotel.SavedHotelService;
 import com.HotelBook.HotelBooking.catalog.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
