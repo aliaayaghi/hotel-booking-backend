@@ -1,283 +1,367 @@
 package com.HotelBook.HotelBooking.Common;
 
+import com.HotelBook.HotelBooking.Hotel.HotelNotFoundException;
+import com.HotelBook.HotelBooking.Hotel.UnauthorizedHotelAccessException;
+import com.HotelBook.HotelBooking.HotelLocation.*;
+import com.HotelBook.HotelBooking.HotelPolicy.ConflictException;
+import com.HotelBook.HotelBooking.Review.exception.ReviewNotFoundException;
+import com.HotelBook.HotelBooking.User.exception.*;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.util.List;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * GlobalExceptionHandler — catches all exceptions across every controller and
- * returns a consistent JSON error response using ApiResponseDTO.
+ * GlobalExceptionHandler — single unified handler for the entire project.
  *
- * ─── WHY THIS WAS UPDATED ─────────────────────────────────────────────────────
+ * Merged from:
+ *   M1  com.HotelBook.HotelBooking.GlobalExceptionHandler
+ *   M2  com.HotelBook.HotelBooking.Common.GlobalExceptionHandler
+ *   M3  com.HotelBook.HotelBooking.Common.exception.GlobalExceptionHandler
  *
- * The original handler was missing two critical handlers:
+ * Canonical location: com.HotelBook.HotelBooking.common.GlobalExceptionHandler
+ * Delete the other three files after this is committed.
  *
- * 1. DataIntegrityViolationException
- *    Thrown by Spring when a database FK constraint or UNIQUE constraint fails.
- *    Example: inserting into pricing_rule with a room_id that doesn't exist in room table.
- *    Without this handler, it fell through to the catch-all Exception handler,
- *    returning "Internal server error" with no useful information.
- *    Now returns 409 Conflict with a clear message.
+ * ── RESPONSE SHAPE ────────────────────────────────────────────────────────────
+ * Every endpoint returns the same ErrorResponse record:
+ * {
+ *   "timestamp": "2026-04-05T10:00:00Z",
+ *   "status":    409,
+ *   "error":     "Conflict",
+ *   "message":   "Hotel is already in your wishlist.",
+ *   "fieldErrors": {}          // only present on validation failures
+ * }
  *
- * 2. HttpMessageNotReadableException
- *    Thrown when the request body JSON is malformed or missing a required field.
- *    Example: sending an invalid date format, bad enum value, or empty body.
- *    Now returns 400 Bad Request with a clear message.
- *
- * 3. MissingServletRequestParameterException
- *    Thrown when a required @RequestParam is missing from the URL.
- *    Example: forgetting ?roomQuantity=3 on the availability endpoints.
- *    Now returns 400 Bad Request naming the missing parameter.
- *
- * 4. MethodArgumentTypeMismatchException
- *    Thrown when a @PathVariable or @RequestParam has the wrong type.
- *    Example: passing a non-UUID string where a UUID is expected.
- *    Now returns 400 Bad Request naming the parameter and its expected type.
- *
- * ─── EXCEPTION HIERARCHY ──────────────────────────────────────────────────────
- *
- *   MethodArgumentNotValidException     → 400 (@Valid failures on @RequestBody)
- *   ConstraintViolationException        → 400 (@Validated on @PathVariable/@RequestParam)
- *   HttpMessageNotReadableException     → 400 (malformed JSON body)
- *   MissingServletRequestParameterException → 400 (missing required @RequestParam)
- *   MethodArgumentTypeMismatchException → 400 (wrong type for path/query param)
- *   BadRequestException                 → 400 (business logic validation)
- *   IllegalArgumentException            → 400 (bad enum value, invalid argument)
- *   ResourceNotFoundException           → 404 (entity not found)
- *   ConflictException                   → 409 (double booking, duplicate, state conflict)
- *   DataIntegrityViolationException     → 409 (DB FK or UNIQUE constraint violation) ← NEW
- *   RuntimeException                    → 500 (unexpected errors — logged server-side)
- *   Exception (catch-all)              → 500
+ * ── STATUS CODE MAP ───────────────────────────────────────────────────────────
+ *   400  MethodArgumentNotValidException       @Valid body failures
+ *   400  ConstraintViolationException          @Validated path/query param failures
+ *   400  HttpMessageNotReadableException       malformed JSON, bad enum, bad date
+ *   400  MissingServletRequestParameterException  missing required @RequestParam
+ *   400  MethodArgumentTypeMismatchException   wrong type for path/query param
+ *   400  IllegalArgumentException              bad argument in business logic
+ *   401  InvalidCredentialsException           wrong email or password
+ *   401  BadCredentialsException               Spring Security auth failure
+ *   401  DisabledException                     account disabled
+ *   401  LockedException                       account suspended
+ *   403  AccessDeniedException                 missing role / @PreAuthorize failed
+ *   403  AuthorizationDeniedException          Spring Security 6 authorization failure
+ *   403  UnauthorizedHotelAccessException      manager editing another manager's hotel
+ *   404  ResourceNotFoundException             any entity not found (user, hotel, etc.)
+ *   404  HotelNotFoundException                hotel-specific not found
+ *   404  LocationNotFoundException             location not found
+ *   404  ReviewNotFoundException               review not found
+ *   404  NoResourceFoundException              endpoint URL does not exist
+ *   409  ConflictException                     business state conflict (double-save, etc.)
+ *   409  DuplicateEmailException               email already registered
+ *   409  LocationAlreadyExistsException        hotel already has a location
+ *   409  DataIntegrityViolationException       DB FK or UNIQUE constraint violated
+ *   500  Exception (catch-all)                 anything unexpected
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ── 400 BAD REQUEST — @Valid field validation failure ─────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    // 400 — VALIDATION
+    // ══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Handles @Valid failures on @RequestBody.
-     * Returns field-level errors so the client knows exactly which fields failed.
-     * Example: missing required field, value out of @Min/@Max range.
+     * @Valid failures on @RequestBody — returns field-level error map.
+     * Used by every controller that accepts a DTO body.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleValidationException(
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex) {
 
-        List<ErrorDTO.FieldError> fieldErrors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(e -> new ErrorDTO.FieldError(e.getField(), e.getDefaultMessage()))
-                .collect(Collectors.toList());
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        for (FieldError fe : ex.getBindingResult().getFieldErrors()) {
+            fieldErrors.put(fe.getField(), fe.getDefaultMessage());
+        }
 
-        return ResponseEntity.badRequest()
-                .body(ApiResponse.error("Validation failed: " + fieldErrors.size() + " error(s)"));
+        return build(HttpStatus.BAD_REQUEST,
+                "Validation failed: " + fieldErrors.size() + " error(s)",
+                fieldErrors);
     }
 
     /**
-     * Handles @Validated failures on @PathVariable / @RequestParam.
+     * @Validated failures on @PathVariable / @RequestParam.
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleConstraintViolation(
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex) {
 
-        List<ErrorDTO.FieldError> errors = ex.getConstraintViolations()
+        Map<String, String> fieldErrors = ex.getConstraintViolations()
                 .stream()
-                .map(v -> new ErrorDTO.FieldError(
-                        v.getPropertyPath().toString(), v.getMessage()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(
+                        v -> v.getPropertyPath().toString().replaceAll(".*\\.", ""),
+                        v -> v.getMessage(),
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
 
-        return ResponseEntity.badRequest().body(ApiResponse.error("Validation failed"));
+        return build(HttpStatus.BAD_REQUEST, "Validation failed", fieldErrors);
     }
 
     /**
-     * Handles malformed JSON request body.
-     *
-     * Triggered when:
-     *   - The request body is empty but @RequestBody is required
-     *   - The JSON has a syntax error (unclosed bracket, missing quote, etc.)
-     *   - A field has the wrong type (e.g. sending a string where a number is expected)
-     *   - A date field has an invalid format (e.g. "01-09-2026" instead of "2026-09-01")
-     *   - An enum field has an unrecognised value (e.g. "MANAGER" instead of "MANAGER_BLOCK")
-     *
-     * Example error response:
-     * {
-     *   "success": false,
-     *   "message": "Invalid request body: check that all field types and formats are correct.
-     *               Dates must be YYYY-MM-DD. Enums must be exact values (e.g. MANAGER_BLOCK)."
-     * }
+     * Malformed JSON body, bad enum value, bad date format, missing body.
+     * Example: sending "01-09-2026" where "2026-09-01" is required.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleMessageNotReadable(
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(
             HttpMessageNotReadableException ex) {
 
-        String detail = ex.getMessage() != null && ex.getMessage().length() < 200
-                ? " Details: " + ex.getMessage()
+        String detail = (ex.getMessage() != null && ex.getMessage().length() < 200)
+                ? " Detail: " + ex.getMessage()
                 : "";
 
-        return ResponseEntity.badRequest().body(ApiResponse.error(
+        return build(HttpStatus.BAD_REQUEST,
                 "Invalid request body: check that all field types and formats are correct. " +
-                        "Dates must be YYYY-MM-DD. " +
-                        "Enum values must be exact (e.g. MANAGER_BLOCK, MAINTENANCE, SPECIAL_EVENT)." +
-                        detail));
+                        "Dates must be YYYY-MM-DD. Enum values must be exact (e.g. MANAGER_BLOCK)." + detail,
+                null);
     }
 
     /**
-     * Handles missing required @RequestParam.
-     *
-     * Example: calling POST /api/rooms/{id}/availability/block
-     * without ?roomQuantity=3 in the URL.
-     *
-     * Returns: 400 with message "Required parameter 'roomQuantity' is missing."
+     * Missing required @RequestParam.
+     * Example: calling an endpoint without ?roomQuantity=3.
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleMissingParam(
+    public ResponseEntity<ErrorResponse> handleMissingParam(
             MissingServletRequestParameterException ex) {
 
-        return ResponseEntity.badRequest().body(ApiResponse.error(
+        return build(HttpStatus.BAD_REQUEST,
                 "Required parameter '" + ex.getParameterName() + "' is missing. " +
-                        "Expected type: " + ex.getParameterType() + "."));
+                        "Expected type: " + ex.getParameterType() + ".",
+                null);
     }
 
     /**
-     * Handles wrong type for @PathVariable or @RequestParam.
-     *
-     * Example: passing "abc" where a UUID is expected in the URL path,
-     * or passing "three" where an int is expected for ?roomQuantity.
-     *
-     * Returns: 400 with the parameter name and expected type.
+     * Wrong type for @PathVariable or @RequestParam.
+     * Example: passing "abc" where a UUID is expected.
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleTypeMismatch(
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
             MethodArgumentTypeMismatchException ex) {
 
-        String expectedType = ex.getRequiredType() != null
-                ? ex.getRequiredType().getSimpleName()
-                : "unknown";
+        String expected = ex.getRequiredType() != null
+                ? ex.getRequiredType().getSimpleName() : "unknown";
 
-        return ResponseEntity.badRequest().body(ApiResponse.error(
-                "Parameter '" + ex.getName() + "' has invalid value '" + ex.getValue() + "'. " +
-                        "Expected type: " + expectedType + "."));
-    }
-
-    // ── 400 BAD REQUEST — business logic ─────────────────────────────────────
-
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleBadRequest(BadRequestException ex) {
-        return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
-    }
-
-    // ── 404 NOT FOUND ─────────────────────────────────────────────────────────
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error(ex.getMessage()));
-    }
-
-    // ── 409 CONFLICT — business state ─────────────────────────────────────────
-
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleConflict(ConflictException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error(ex.getMessage()));
+        return build(HttpStatus.BAD_REQUEST,
+                "Parameter '" + ex.getName() + "' has invalid value '" + ex.getValue() +
+                        "'. Expected type: " + expected + ".",
+                null);
     }
 
     /**
-     * NEW: Handles database constraint violations.
+     * Explicit bad argument thrown from service/business logic.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 401 — AUTHENTICATION
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** Wrong email or password from business layer. */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
+    }
+
+    /** Spring Security failed to authenticate (bad password, user not found). */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+        return build(HttpStatus.UNAUTHORIZED, "Invalid email or password", null);
+    }
+
+    /** Account has been disabled (isEnabled = false). */
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabled(DisabledException ex) {
+        return build(HttpStatus.UNAUTHORIZED, "Account is disabled", null);
+    }
+
+    /** Account has been suspended (isAccountNonLocked = false). */
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<ErrorResponse> handleLocked(LockedException ex) {
+        return build(HttpStatus.UNAUTHORIZED, "Account is suspended", null);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 403 — AUTHORIZATION
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** @PreAuthorize or hasRole() check failed. */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        return build(HttpStatus.FORBIDDEN,
+                "You do not have permission to perform this action", null);
+    }
+
+    /** Spring Security 6 method security authorization failure. */
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(
+            AuthorizationDeniedException ex) {
+        return build(HttpStatus.FORBIDDEN, "Access denied — insufficient role", null);
+    }
+
+    /** Manager tried to edit a hotel they do not own. */
+    @ExceptionHandler(UnauthorizedHotelAccessException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedHotelAccess(
+            UnauthorizedHotelAccessException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), null);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 404 — NOT FOUND
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** Generic entity not found — covers user, booking, payment, notification, etc. */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(HotelNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleHotelNotFound(HotelNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(LocationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleLocationNotFound(LocationNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleReviewNotFound(ReviewNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    /** The URL path itself doesn't match any endpoint. */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoEndpoint(NoResourceFoundException ex) {
+        return build(HttpStatus.NOT_FOUND,
+                "The requested endpoint does not exist", null);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 409 — CONFLICT
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** Business-level state conflict (double-save wishlist, booking overlap, etc.). */
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    /** Email already registered during sign-up. */
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmail(DuplicateEmailException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    /** Hotel already has a location (one-to-one constraint). */
+    @ExceptionHandler(LocationAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleLocationAlreadyExists(
+            LocationAlreadyExistsException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    /**
+     * Database FK or UNIQUE constraint violation.
      *
-     * Thrown by Spring when:
+     * FK example:   inserting a pricing rule for a room_id that doesn't exist.
+     * UNIQUE example: saving the same hotel twice in the wishlist,
+     *                 or blocking the same (room_id, date) twice.
      *
-     * 1. FOREIGN KEY constraint fails:
-     *    You tried to insert a record referencing an ID that doesn't exist.
-     *    Example: creating a pricing rule for a room_id that is not in the room table.
-     *    Example: creating an availability block for a room_id that doesn't exist.
-     *    FIX: use the correct, existing room UUID (e.g. cccccccc-cccc-cccc-cccc-cccccccccccc).
-     *
-     * 2. UNIQUE constraint fails:
-     *    You tried to insert a duplicate record where uniqueness is enforced.
-     *    Example: blocking the same (room_id, date) twice in room_availability.
-     *    Example: creating a second payment for the same booking.
-     *    Example: saving the same hotel twice in the wishlist.
-     *    FIX: do not duplicate — check if the record exists first.
-     *
-     * Returns 409 Conflict (not 500) because this is a data conflict, not a server bug.
-     *
-     * WHY THIS WAS MISSING:
-     * DataIntegrityViolationException extends DataAccessException extends RuntimeException.
-     * It IS a RuntimeException, so it should be caught by handleRuntimeException().
-     * However, in Spring Boot 4 / Spring Framework 7, exceptions thrown inside a
-     * @Transactional forEach lambda get wrapped through multiple proxy layers before
-     * reaching the @ExceptionHandler. The Spring MVC dispatcher sometimes resolves
-     * the wrong handler for these wrapped exceptions. Adding an explicit handler
-     * for DataIntegrityViolationException fixes this ambiguity.
+     * Returns 409, not 500, because this is a data conflict not a server bug.
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleDataIntegrityViolation(
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
             DataIntegrityViolationException ex) {
 
-        // Extract the most useful part of the message for the developer
-        String message = ex.getMostSpecificCause() != null
+        String root = ex.getMostSpecificCause() != null
                 ? ex.getMostSpecificCause().getMessage()
                 : ex.getMessage();
 
-        // Detect FK constraint failure and give a helpful message
-        if (message != null && message.contains("foreign key constraint fails")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(
-                    "Database constraint violation: the referenced record does not exist. " +
-                            "Check that the room/booking/policy ID in your request URL is valid and exists. " +
-                            "Use one of the seeded UUIDs (e.g. cccccccc-cccc-cccc-cccc-cccccccccccc for Standard King)."));
+        if (root != null && root.contains("foreign key constraint fails")) {
+            return build(HttpStatus.CONFLICT,
+                    "The referenced record does not exist. " +
+                            "Check that the ID in your request URL is valid and exists in the database.",
+                    null);
         }
 
-        // Detect UNIQUE constraint failure
-        if (message != null && (message.contains("Duplicate entry") || message.contains("unique constraint"))) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(
-                    "Duplicate record: this entry already exists. " +
-                            "The record you are trying to create conflicts with an existing one " +
-                            "(e.g. same date already blocked, same hotel already saved)."));
+        if (root != null && (root.contains("Duplicate entry")
+                || root.contains("unique constraint"))) {
+            return build(HttpStatus.CONFLICT,
+                    "Duplicate record: this entry already exists " +
+                            "(e.g. same date already blocked, same hotel already saved).",
+                    null);
         }
 
-        // Generic data integrity error
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(
-                "Database constraint violation: " + message));
+        return build(HttpStatus.CONFLICT,
+                "Database constraint violation: " + root, null);
     }
 
-    // ── 500 INTERNAL SERVER ERROR ─────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    // 500 — UNEXPECTED
+    // ══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Catch-all for unexpected RuntimeException.
-     * Returns 500 with the exception message.
-     *
-     * In production: log this with log.error("Unexpected error", ex)
-     * before returning — never expose stack traces to clients.
-     */
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred: " + ex.getMessage()));
-    }
-
-    /**
-     * Absolute catch-all for checked exceptions.
-     * Should never be reached in normal operation.
+     * Absolute catch-all.
+     * Always log the stack trace server-side — never expose it to the client.
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<ErrorDTO>> handleGenericException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Internal server error: " + ex.getMessage()));
+    public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
+        return build(HttpStatus.INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred. Please try again.", null);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // SHARED RESPONSE RECORD
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Unified error response shape used by every handler in this class.
+     * fieldErrors is null/omitted for non-validation errors.
+     */
+    public record ErrorResponse(
+            Instant             timestamp,
+            int                 status,
+            String              error,
+            String              message,
+            Map<String, String> fieldErrors
+    ) {}
+
+    private ResponseEntity<ErrorResponse> build(
+            HttpStatus status, String message, Map<String, String> fieldErrors) {
+
+        return ResponseEntity.status(status).body(new ErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                message,
+                fieldErrors
+        ));
     }
 }
