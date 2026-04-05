@@ -35,11 +35,12 @@ public class Booking {
     @JoinColumn(name = "room_id", insertable = false, updatable = false)
     private Room room;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "id", referencedColumnName = "booking_id",
-            table = "payment", insertable = false, updatable = false)
+    @OneToOne(mappedBy = "booking", fetch = FetchType.LAZY, optional = true)
     private Payment payment;
 
+//    // Booking.java — remove the broken @JoinColumn, use mappedBy
+//    @OneToOne(mappedBy = "booking", fetch = FetchType.LAZY, optional = true)
+//    private Payment payment;
 
     /** FK to customer/user (Member 1's entity). Plain UUID — no @ManyToOne. */
     @Column(name = "customer_id", nullable = false)

@@ -1,8 +1,12 @@
 package com.HotelBook.HotelBooking.Hotel;
 
+import com.HotelBook.HotelBooking.HotelAccessibility.HotelAccessibility;
 import com.HotelBook.HotelBooking.HotelAmenity.HotelAmenity;
+import com.HotelBook.HotelBooking.HotelPhoto.HotelPhoto;
 import com.HotelBook.HotelBooking.HotelPolicy.BreakfastPolicy;
+import com.HotelBook.HotelBooking.HotelPolicy.CheckInPolicy;
 import com.HotelBook.HotelBooking.HotelPolicy.PetPolicy;
+import com.HotelBook.HotelBooking.Room.Room;
 import com.HotelBook.HotelBooking.User.entity.HotelManager;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +14,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -106,7 +111,20 @@ public class Hotel {
     @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY)
     private PetPolicy petPolicy;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id")   // tells JPA to look at hotel_id column in hotel_amenities
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
     private List<HotelAmenity> amenities;
+
+    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY)
+    private CheckInPolicy checkInPolicy;
+
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    private List<HotelPhoto> photos;
+
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    private List<HotelAccessibility> accessibilityFeatures;
+
+    // Hotel.java
+    @Builder.Default
+    @OneToMany(mappedBy = "hotelId", fetch = FetchType.LAZY)
+    private List<Room> rooms = new ArrayList<>();
 }

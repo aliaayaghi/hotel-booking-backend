@@ -1,8 +1,12 @@
 package com.HotelBook.HotelBooking.HotelAmenity;
 
+import com.HotelBook.HotelBooking.Hotel.Hotel;
+import com.HotelBook.HotelBooking.Room.Room;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,8 +39,8 @@ public class HotelAmenity {
     private UUID id;
 
     // FK stored as plain column — no JPA join to avoid loading full Hotel
-    @Column(name = "hotel_id", nullable = false)
-    private UUID hotelId;
+//    @Column(name = "hotel_id", nullable = false)
+//    private UUID hotelId;
 
     @Column(nullable = false)
     private String name;    // e.g. "Outdoor Swimming Pool", "Fitness Center"
@@ -50,4 +54,8 @@ public class HotelAmenity {
     // Nullable because the icon can be inferred from category if not specified
     @Column(length = 50)
     private String icon;
+
+     @ManyToOne(fetch = FetchType.LAZY)
+     @JoinColumn(name = "hotel_id", nullable = false)
+     private Hotel hotel;
 }

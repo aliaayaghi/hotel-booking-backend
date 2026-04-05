@@ -50,6 +50,6 @@ public interface HotelPhotoRepository extends JpaRepository<HotelPhoto, UUID> {
      * @Modifying requires @Transactional on the calling method.
      */
     @Modifying
-    @Query("UPDATE HotelPhoto p SET p.isCover = false WHERE p.hotelId = :hotelId")
+    @Query("UPDATE HotelPhoto p SET p.isCover = false WHERE p.hotel.id = :hotelId")
     void clearCoverByHotelId(@Param("hotelId") UUID hotelId);
 }

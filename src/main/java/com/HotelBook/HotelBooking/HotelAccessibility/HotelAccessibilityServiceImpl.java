@@ -1,6 +1,6 @@
 package com.HotelBook.HotelBooking.HotelAccessibility;
 
-
+import com.HotelBook.HotelBooking.Hotel.Hotel;
 import com.HotelBook.HotelBooking.Hotel.HotelRepository;
 import com.HotelBook.HotelBooking.Common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -31,20 +31,19 @@ public class HotelAccessibilityServiceImpl implements HotelAccessibilityService 
     @Override
     @Transactional
     public HotelAccessibilityResponse addFeature(UUID hotelId, CreateAccessibilityRequest request) {
-        // Verify the hotel exists before attaching a feature to it
-        if (!hotelRepository.existsById(hotelId)) {
-            throw new ResourceNotFoundException("Hotel", hotelId);
-        }
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel", hotelId));
 
         HotelAccessibility feature = HotelAccessibility.builder()
-                .hotelId(hotelId)
+                .hotel(hotel)
                 .feature(request.getFeature())
                 .level(request.getLevel())
                 .description(request.getDescription())
                 .build();
 
         feature = accessibilityRepository.save(feature);
-        log.info("Added accessibility feature '{}' (level={}) to hotel {}", feature.getFeature(), feature.getLevel(), hotelId);
+        log.info("Added accessibility feature '{}' (level={}) to hotel {}",
+                feature.getFeature(), feature.getLevel(), hotelId);
         return toResponse(feature);
     }
 
@@ -54,8 +53,7 @@ public class HotelAccessibilityServiceImpl implements HotelAccessibilityService 
         HotelAccessibility feature = accessibilityRepository.findById(featureId)
                 .orElseThrow(() -> new ResourceNotFoundException("HotelAccessibility", featureId));
 
-        // Verify the feature belongs to the hotel (prevents cross-hotel deletions)
-        if (!feature.getHotelId().equals(hotelId)) {
+        if (!feature.getHotel().getId().equals(hotelId)) {
             throw new ResourceNotFoundException("HotelAccessibility", featureId);
         }
 

@@ -1,5 +1,6 @@
 package com.HotelBook.HotelBooking.HotelPhoto;
 
+import com.HotelBook.HotelBooking.Hotel.Hotel;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -41,9 +42,11 @@ public class HotelPhoto {
 
     // FK to hotels.id — stored as a plain UUID column (no @ManyToOne to avoid
     // loading the full Hotel object every time we fetch a photo list).
-    @Column(name = "hotel_id", nullable = false, updatable = false)
-    private UUID hotelId;
-
+//    @Column(name = "hotel_id", nullable = false, updatable = false)
+//    private UUID hotelId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id", nullable = false)
+    private Hotel hotel;
     // Full CDN URL — e.g. "https://cdn.hotelbook.com/hotels/abc/photo1.webp"
     @Column(nullable = false, length = 1000)
     private String url;

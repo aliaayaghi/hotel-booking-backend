@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class ReviewResponseDTO {
 
-    private Long id;
+    private UUID id;
     private UUID hotelId;
     private String hotelName;
     private UUID customerId;
@@ -38,7 +38,7 @@ public class ReviewResponseDTO {
     private LocalDateTime createdAt;
 
     // Constructor
-    public ReviewResponseDTO(Long id, UUID hotelId, String hotelName, UUID customerId, String customerName,
+    public ReviewResponseDTO(UUID id, UUID hotelId, String hotelName, UUID customerId, String customerName,
                              UUID bookingId, Integer cleanlinessScore, Integer locationScore,
                              Integer valueScore, Integer comfortScore, Integer serviceScore,
                              Integer customerOverallRating, Double calculatedOverallRating,
@@ -69,7 +69,7 @@ public class ReviewResponseDTO {
     }
 
     // Getters
-    public Long getId() { return id; }
+    public UUID getId() { return id; }
     public UUID getHotelId() { return hotelId; }
     public String getHotelName() { return hotelName; }
     public UUID getCustomerId() { return customerId; }

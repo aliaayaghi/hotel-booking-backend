@@ -12,7 +12,7 @@ public class HotelPhotoMapper {
     public HotelPhotoResponse toResponse(HotelPhoto photo) {
         return HotelPhotoResponse.builder()
                 .id(photo.getId())
-                .hotelId(photo.getHotelId())
+                .hotelId(photo.getHotel().getId())   // ← fixed
                 .url(photo.getUrl())
                 .caption(photo.getCaption())
                 .order(photo.getOrder())

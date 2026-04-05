@@ -1,6 +1,7 @@
 package com.HotelBook.HotelBooking.Notification;
 
 
+import com.HotelBook.HotelBooking.User.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -84,4 +85,8 @@ public class Notification {
     @CreationTimestamp
     @Column(updatable = false)
     private Instant createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipient_id", insertable = false, updatable = false)
+    private User recipient;
 }

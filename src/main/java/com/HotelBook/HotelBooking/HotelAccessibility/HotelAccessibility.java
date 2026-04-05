@@ -1,6 +1,7 @@
 package com.HotelBook.HotelBooking.HotelAccessibility;
 
 
+import com.HotelBook.HotelBooking.Hotel.Hotel;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,9 +38,11 @@ public class HotelAccessibility {
 
     // FK → hotels.id — stored as a plain UUID column (no JPA @ManyToOne join)
     // This avoids loading the full Hotel entity on every accessibility query.
-    @Column(nullable = false)
-    private UUID hotelId;
-
+//    @Column(nullable = false)
+//    private UUID hotelId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id", nullable = false)
+    private Hotel hotel;
     // e.g. "Wheelchair Ramp", "Elevator", "Accessible Bathroom", "Hearing Loop"
     @Column(nullable = false)
     private String feature;

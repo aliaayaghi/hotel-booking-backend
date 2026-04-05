@@ -3,6 +3,7 @@ package com.HotelBook.HotelBooking.Room;
 
 
 import com.HotelBook.HotelBooking.Cancellation.CancellationPolicy;
+import com.HotelBook.HotelBooking.Hotel.Hotel;
 import com.HotelBook.HotelBooking.Pricing.PricingRule;
 import com.HotelBook.HotelBooking.RoomAccessibility.RoomAccessibility;
 import com.HotelBook.HotelBooking.RoomAmenity.RoomAmenity;
@@ -53,6 +54,9 @@ public class Room {
     @Column(name = "hotel_id", nullable = false, updatable = false)
     private UUID hotelId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id", insertable = false, updatable = false)
+    private Hotel hotel;
 
     @Column(nullable = false, length = 100)
     private String name;
