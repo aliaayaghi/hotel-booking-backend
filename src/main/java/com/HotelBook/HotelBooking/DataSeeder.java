@@ -1,8 +1,8 @@
 package com.HotelBook.HotelBooking;
 
-import com.HotelBook.HotelBooking.room.*;
-import com.HotelBook.HotelBooking.roomamenity.*;
-import com.HotelBook.HotelBooking.roomavailability.*;
+import com.HotelBook.HotelBooking.Room.*;
+import com.HotelBook.HotelBooking.RoomAmenity.*;
+import com.HotelBook.HotelBooking.RoomAvailability.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

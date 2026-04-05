@@ -4,9 +4,9 @@ package com.HotelBook.HotelBooking.Review.mapper;
 import com.HotelBook.HotelBooking.Review.Entity.Review;
 import com.HotelBook.HotelBooking.Review.dto.ReviewRequestDTO;
 import com.HotelBook.HotelBooking.Review.dto.ReviewResponseDTO;
-import com.HotelBook.HotelBooking.booking.Booking;
-import com.HotelBook.HotelBooking.catalog.hotel.Hotel;
-import com.HotelBook.HotelBooking.catalog.user.entity.Customer;
+import com.HotelBook.HotelBooking.Booking.Booking;
+import com.HotelBook.HotelBooking.Hotel.Hotel;
+import com.HotelBook.HotelBooking.User.entity.Customer;
 
 public class ReviewMapper {
 

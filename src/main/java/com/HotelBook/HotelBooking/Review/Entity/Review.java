@@ -1,9 +1,9 @@
 package com.HotelBook.HotelBooking.Review.Entity;
 
 
-import com.HotelBook.HotelBooking.booking.Booking;
-import com.HotelBook.HotelBooking.catalog.hotel.Hotel;
-import com.HotelBook.HotelBooking.catalog.user.entity.Customer;
+import com.HotelBook.HotelBooking.Booking.Booking;
+import com.HotelBook.HotelBooking.Hotel.Hotel;
+import com.HotelBook.HotelBooking.User.entity.Customer;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

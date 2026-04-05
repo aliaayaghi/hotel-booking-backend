@@ -4,7 +4,7 @@ package com.HotelBook.HotelBooking.Review.service;
 import com.HotelBook.HotelBooking.Review.Entity.Review;
 import com.HotelBook.HotelBooking.Review.dto.ReviewRequestDTO;
 import com.HotelBook.HotelBooking.Review.dto.ReviewResponseDTO;
-import com.HotelBook.HotelBooking.common.pagination.PagedResponse;
+import com.HotelBook.HotelBooking.Common.pagination.PagedResponse;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
