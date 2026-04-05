@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 /**
  * GlobalExceptionHandler — catches all exceptions across every controller and
- * returns a consistent JSON error response using ApiResponse.
+ * returns a consistent JSON error response using ApiResponseDTO.
  *
  * ─── WHY THIS WAS UPDATED ─────────────────────────────────────────────────────
  *

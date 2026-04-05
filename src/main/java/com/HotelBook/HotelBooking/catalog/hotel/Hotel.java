@@ -106,6 +106,7 @@ public class Hotel {
     @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY)
     private PetPolicy petPolicy;
 
-    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hotel_id")   // tells JPA to look at hotel_id column in hotel_amenities
     private List<HotelAmenity> amenities;
 }
