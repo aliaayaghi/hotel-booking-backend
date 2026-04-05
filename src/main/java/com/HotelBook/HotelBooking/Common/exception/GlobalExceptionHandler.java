@@ -1,6 +1,6 @@
 package com.HotelBook.HotelBooking.Common.exception;
 
-//import com.HotelBook.HotelBooking.Review.exception.ReviewNotFoundException;
+import com.HotelBook.HotelBooking.Review.exception.ReviewNotFoundException;
 import com.HotelBook.HotelBooking.Common.dto.ErrorDTO;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -28,13 +28,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorDTO.of(ex.getErrorCode(), ex.getMessage()));
     }
 
-    // Handles your existing ReviewNotFoundException etc.
-//    @ExceptionHandler({ReviewNotFoundException.class})
-//    public ResponseEntity<ErrorDTO> handleReviewNotFound(RuntimeException ex) {
-//        return ResponseEntity
-//                .status(HttpStatus.NOT_FOUND)
-//                .body(ErrorDTO.of("REVIEW_NOT_FOUND", ex.getMessage()));
-//    }
+//     Handles your existing ReviewNotFoundException etc.
+    @ExceptionHandler({ReviewNotFoundException.class})
+    public ResponseEntity<ErrorDTO> handleReviewNotFound(RuntimeException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorDTO.of("REVIEW_NOT_FOUND", ex.getMessage()));
+    }
 
     // ── VALIDATION ERRORS (400) ───────────────────────────────────────────────
 
