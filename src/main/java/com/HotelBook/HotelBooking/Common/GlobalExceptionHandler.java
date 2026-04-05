@@ -1,11 +1,6 @@
 package com.HotelBook.HotelBooking.Common;
 
-import com.HotelBook.HotelBooking.Hotel.HotelNotFoundException;
-import com.HotelBook.HotelBooking.Hotel.UnauthorizedHotelAccessException;
-import com.HotelBook.HotelBooking.HotelLocation.*;
-import com.HotelBook.HotelBooking.HotelPolicy.ConflictException;
-import com.HotelBook.HotelBooking.Review.exception.ReviewNotFoundException;
-import com.HotelBook.HotelBooking.User.exception.*;
+import com.HotelBook.HotelBooking.Common.exception.*;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

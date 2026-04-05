@@ -3,7 +3,7 @@ package com.HotelBook.HotelBooking.Notification;
 
 import com.HotelBook.HotelBooking.User.entity.User;
 import com.HotelBook.HotelBooking.User.repository.UserRepository;
-import com.HotelBook.HotelBooking.User.exception.ResourceNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -3,7 +3,7 @@ package com.HotelBook.HotelBooking.User.service.impl;
 import com.HotelBook.HotelBooking.User.dto.request.*;
 import com.HotelBook.HotelBooking.User.dto.response.*;
 import com.HotelBook.HotelBooking.User.entity.*;
-import com.HotelBook.HotelBooking.User.exception.ResourceNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.ResourceNotFoundException;
 import com.HotelBook.HotelBooking.User.mapper.UserMapper;
 import com.HotelBook.HotelBooking.User.repository.*;
 import com.HotelBook.HotelBooking.User.service.UserService;

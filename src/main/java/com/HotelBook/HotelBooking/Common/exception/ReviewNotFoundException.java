@@ -1,7 +1,6 @@
-package com.HotelBook.HotelBooking.Review.exception;
+package com.HotelBook.HotelBooking.Common.exception;
 
 
-import com.HotelBook.HotelBooking.Common.exception.BusinessException;
 import org.springframework.http.HttpStatus;
 
 public class ReviewNotFoundException extends BusinessException {

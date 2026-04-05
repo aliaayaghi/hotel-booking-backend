@@ -1,4 +1,4 @@
-package com.HotelBook.HotelBooking.Review.exception;
+package com.HotelBook.HotelBooking.Common.exception;
 
 
 import java.util.UUID;

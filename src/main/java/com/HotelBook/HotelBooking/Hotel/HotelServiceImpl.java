@@ -1,8 +1,10 @@
 package com.HotelBook.HotelBooking.Hotel;
 
 
+import com.HotelBook.HotelBooking.Common.exception.HotelNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.UnauthorizedHotelAccessException;
 import com.HotelBook.HotelBooking.User.entity.HotelManager;
-import com.HotelBook.HotelBooking.User.exception.ResourceNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.ResourceNotFoundException;
 import com.HotelBook.HotelBooking.User.repository.HotelManagerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

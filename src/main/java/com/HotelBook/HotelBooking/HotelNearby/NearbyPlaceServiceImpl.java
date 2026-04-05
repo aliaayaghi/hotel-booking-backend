@@ -1,7 +1,7 @@
 package com.HotelBook.HotelBooking.HotelNearby;
 
-import com.HotelBook.HotelBooking.Hotel.HotelNotFoundException;
-import com.HotelBook.HotelBooking.Hotel.UnauthorizedHotelAccessException;
+import com.HotelBook.HotelBooking.Common.exception.HotelNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.UnauthorizedHotelAccessException;
 import com.HotelBook.HotelBooking.Hotel.HotelRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

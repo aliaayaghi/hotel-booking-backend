@@ -2,8 +2,8 @@ package com.HotelBook.HotelBooking.HotelAmenity;
 
 
 import com.HotelBook.HotelBooking.Hotel.HotelRepository;
-import com.HotelBook.HotelBooking.Hotel.HotelNotFoundException;
-import com.HotelBook.HotelBooking.Hotel.UnauthorizedHotelAccessException;
+import com.HotelBook.HotelBooking.Common.exception.HotelNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.UnauthorizedHotelAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

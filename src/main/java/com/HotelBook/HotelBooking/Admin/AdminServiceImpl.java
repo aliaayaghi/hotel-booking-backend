@@ -5,7 +5,7 @@ import com.HotelBook.HotelBooking.Hotel.*;
 import com.HotelBook.HotelBooking.User.dto.response.UserResponse;
 import com.HotelBook.HotelBooking.User.entity.User;
 import com.HotelBook.HotelBooking.User.enums.UserRole;
-import com.HotelBook.HotelBooking.User.exception.ResourceNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.ResourceNotFoundException;
 import com.HotelBook.HotelBooking.User.mapper.UserMapper;
 import com.HotelBook.HotelBooking.User.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

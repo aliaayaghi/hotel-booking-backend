@@ -1,4 +1,4 @@
-package com.HotelBook.HotelBooking.Common;
+package com.HotelBook.HotelBooking.Common.exception;
 
 
 public class BadRequestException extends RuntimeException {

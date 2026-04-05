@@ -1,8 +1,8 @@
 package com.HotelBook.HotelBooking.HotelPhoto;
 
 import com.HotelBook.HotelBooking.Hotel.HotelRepository;
-import com.HotelBook.HotelBooking.User.exception.ResourceNotFoundException;
-import com.HotelBook.HotelBooking.User.exception.UnauthorizedException;
+import com.HotelBook.HotelBooking.Common.exception.ResourceNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

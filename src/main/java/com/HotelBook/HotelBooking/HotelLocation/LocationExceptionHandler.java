@@ -1,5 +1,7 @@
 package com.HotelBook.HotelBooking.HotelLocation;
 
+import com.HotelBook.HotelBooking.Common.exception.LocationAlreadyExistsException;
+import com.HotelBook.HotelBooking.Common.exception.LocationNotFoundException;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.HttpStatus;

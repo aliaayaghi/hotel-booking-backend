@@ -1,4 +1,4 @@
-package com.HotelBook.HotelBooking.User.exception;
+package com.HotelBook.HotelBooking.Common.exception;
 
 
 public class InvalidCredentialsException extends RuntimeException {

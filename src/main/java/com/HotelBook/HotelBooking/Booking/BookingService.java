@@ -2,8 +2,8 @@ package com.HotelBook.HotelBooking.Booking;
 
 import com.HotelBook.HotelBooking.Cancellation.CancellationPolicy;
 import com.HotelBook.HotelBooking.Cancellation.CancellationPolicyService;
-import com.HotelBook.HotelBooking.Common.BadRequestException;
-import com.HotelBook.HotelBooking.Common.ConflictException;
+import com.HotelBook.HotelBooking.Common.exception.BadRequestException;
+import com.HotelBook.HotelBooking.Common.exception.ConflictException;
 import com.HotelBook.HotelBooking.Common.ResourceNotFoundException;
 import com.HotelBook.HotelBooking.Pricing.PricingRuleService;
 import com.HotelBook.HotelBooking.Room.Room;

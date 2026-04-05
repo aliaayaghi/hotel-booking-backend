@@ -1,8 +1,10 @@
 package com.HotelBook.HotelBooking.HotelLocation;
 
+import com.HotelBook.HotelBooking.Common.exception.LocationAlreadyExistsException;
+import com.HotelBook.HotelBooking.Common.exception.LocationNotFoundException;
 import com.HotelBook.HotelBooking.Hotel.Hotel;
 import com.HotelBook.HotelBooking.Hotel.HotelRepository;
-import com.HotelBook.HotelBooking.User.exception.ResourceNotFoundException;
+import com.HotelBook.HotelBooking.Common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
