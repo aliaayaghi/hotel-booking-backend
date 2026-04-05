@@ -1,7 +1,6 @@
 package com.HotelBook.HotelBooking.Booking;
 
-
-import com.HotelBook.HotelBooking.Common.ApiResponse;
+import com.HotelBook.HotelBooking.Common.dto.ApiResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,66 +18,62 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<BookingResponseDTO>> createBooking(
+    public ResponseEntity<ApiResponseDTO<BookingResponseDTO>> createBooking(
             @RequestHeader("X-Customer-Id") UUID customerId,
             @Valid @RequestBody BookingRequestDTO request) {
 
         BookingResponseDTO booking = bookingService.createBooking(customerId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Booking created successfully. Proceed to payment.", booking));
+                .body(ApiResponseDTO.success(booking, "Booking created successfully. Proceed to payment."));
     }
 
-
     @GetMapping
-    public ResponseEntity<ApiResponse<List<BookingResponseDTO>>> getMyBookings(
+    public ResponseEntity<ApiResponseDTO<List<BookingResponseDTO>>> getMyBookings(
             @RequestHeader("X-Customer-Id") UUID customerId) {
 
         List<BookingResponseDTO> bookings = bookingService.getBookingsByCustomer(customerId);
-        return ResponseEntity.ok(ApiResponse.success("Bookings retrieved", bookings));
+        return ResponseEntity.ok(ApiResponseDTO.success(bookings, "Bookings retrieved"));
     }
 
-
     @GetMapping("/{bookingId}")
-    public ResponseEntity<ApiResponse<BookingResponseDTO>> getBooking(
+    public ResponseEntity<ApiResponseDTO<BookingResponseDTO>> getBooking(
             @RequestHeader("X-Customer-Id") UUID customerId,
             @PathVariable UUID bookingId) {
 
         BookingResponseDTO booking = bookingService.getBookingById(bookingId, customerId);
-        return ResponseEntity.ok(ApiResponse.success("Booking retrieved", booking));
+        return ResponseEntity.ok(ApiResponseDTO.success(booking, "Booking retrieved"));
     }
 
     @PatchMapping("/{bookingId}/cancel")
-    public ResponseEntity<ApiResponse<BookingResponseDTO>> cancelBooking(
+    public ResponseEntity<ApiResponseDTO<BookingResponseDTO>> cancelBooking(
             @RequestHeader("X-Customer-Id") UUID customerId,
             @PathVariable UUID bookingId) {
 
         BookingResponseDTO booking = bookingService.cancelBooking(bookingId, customerId, "CUSTOMER");
-        return ResponseEntity.ok(ApiResponse.success("Booking cancelled successfully.", booking));
+        return ResponseEntity.ok(ApiResponseDTO.success(booking, "Booking cancelled successfully."));
     }
 
     @PatchMapping("/{bookingId}/complete")
-    public ResponseEntity<ApiResponse<BookingResponseDTO>> completeBooking(
+    public ResponseEntity<ApiResponseDTO<BookingResponseDTO>> completeBooking(
             @PathVariable UUID bookingId) {
 
         BookingResponseDTO booking = bookingService.completeBooking(bookingId);
-        return ResponseEntity.ok(ApiResponse.success("Booking marked as completed.", booking));
+        return ResponseEntity.ok(ApiResponseDTO.success(booking, "Booking marked as completed."));
     }
 
-
     @PatchMapping("/{bookingId}/no-show")
-    public ResponseEntity<ApiResponse<BookingResponseDTO>> markNoShow(
+    public ResponseEntity<ApiResponseDTO<BookingResponseDTO>> markNoShow(
             @PathVariable UUID bookingId) {
 
         BookingResponseDTO booking = bookingService.markNoShow(bookingId);
-        return ResponseEntity.ok(ApiResponse.success("Booking marked as no-show.", booking));
+        return ResponseEntity.ok(ApiResponseDTO.success(booking, "Booking marked as no-show."));
     }
 
-
     @GetMapping("/hotels/{hotelId}")
-    public ResponseEntity<ApiResponse<List<BookingResponseDTO>>> getHotelBookings(
+    public ResponseEntity<ApiResponseDTO<List<BookingResponseDTO>>> getHotelBookings(
             @PathVariable UUID hotelId) {
 
         List<BookingResponseDTO> bookings = bookingService.getBookingsByHotel(hotelId);
-        return ResponseEntity.ok(ApiResponse.success("Hotel bookings retrieved", bookings));
+        return ResponseEntity.ok(ApiResponseDTO.success(bookings, "Hotel bookings retrieved"));
     }
 }

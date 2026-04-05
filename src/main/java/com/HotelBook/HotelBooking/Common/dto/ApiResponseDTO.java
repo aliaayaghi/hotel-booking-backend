@@ -1,23 +1,26 @@
 package com.HotelBook.HotelBooking.Common.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
-// Every single endpoint in the project returns this wrapper — success or fail
-// T is the actual data type e.g. ApiResponseDTO<ReviewResponseDTO>
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponseDTO<T> {
 
     private boolean success;
     private String message;
     private T data;              // null on error responses
     private LocalDateTime timestamp;
+
+    // ── FACTORY METHODS ──────────────────────────────────────────────────────
 
     public static <T> ApiResponseDTO<T> success(T data, String message) {
         return ApiResponseDTO.<T>builder()
@@ -31,6 +34,11 @@ public class ApiResponseDTO<T> {
     // Shortcut when you don't need a custom message
     public static <T> ApiResponseDTO<T> success(T data) {
         return success(data, "Operation completed successfully");
+    }
+
+    // Shortcut when there's no data to return (e.g. DELETE)
+    public static <T> ApiResponseDTO<T> success(String message) {
+        return success(null, message);
     }
 
     public static <T> ApiResponseDTO<T> error(String message) {

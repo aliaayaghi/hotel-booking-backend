@@ -1,5 +1,6 @@
 package com.HotelBook.HotelBooking.Common.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,30 +13,34 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorDTO {
 
-    private String error;                    // error code  e.g. "REVIEW_NOT_FOUND"
-    private String message;                  // human readable e.g. "Review with id 5 was not found"
-    private Map<String, String> fieldErrors; // only populated on validation errors
+    private int status;
+    private String error;                      // e.g. "REVIEW_NOT_FOUND"
+    private String message;                    // human readable
+    private Map<String, String> fieldErrors;   // validation errors only
     private LocalDateTime timestamp;
 
-    // ── FACTORY METHODS ───────────────────────────────────────────────────────
+    // ── FACTORY METHODS ──────────────────────────────────────────────────────
 
-    // Use this for simple errors — not found, forbidden, conflict etc.
-    public static ErrorDTO of(String error, String message) {
+    // Simple error: not found, forbidden, conflict, etc.
+    public static ErrorDTO of(int status, String error, String message) {
         return ErrorDTO.builder()
+                .status(status)
                 .error(error)
                 .message(message)
-                .fieldErrors(null)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
 
-    // Use this only for validation errors where you want to show field-level detail
-    public static ErrorDTO withFieldErrors(String error,
+    // Validation errors with field-level detail
+    public static ErrorDTO withFieldErrors(int status,
+                                           String error,
                                            String message,
                                            Map<String, String> fieldErrors) {
         return ErrorDTO.builder()
+                .status(status)
                 .error(error)
                 .message(message)
                 .fieldErrors(fieldErrors)
