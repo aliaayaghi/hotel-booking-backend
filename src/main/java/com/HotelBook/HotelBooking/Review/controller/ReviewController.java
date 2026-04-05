@@ -4,8 +4,8 @@ import com.HotelBook.HotelBooking.Review.Entity.Review;
 import com.HotelBook.HotelBooking.Review.dto.ReviewRequestDTO;
 import com.HotelBook.HotelBooking.Review.dto.ReviewResponseDTO;
 import com.HotelBook.HotelBooking.Review.service.ReviewService;
+import com.HotelBook.HotelBooking.common.dto.ApiResponseDTO;
 import com.HotelBook.HotelBooking.common.pagination.PagedResponse;
-import com.HotelBook.HotelBooking.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +35,7 @@ public class ReviewController {
 
     @Operation(summary = "List reviews with optional filters")
     @GetMapping
-    public ResponseEntity<ApiResponse<PagedResponse<ReviewResponseDTO>>> listReviews(
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ReviewResponseDTO>>> listReviews(
             @PageableDefault(size = 10)
             @SortDefault.SortDefaults({
                     @SortDefault(sort = "createdAt", direction = Sort.Direction.DESC)
@@ -53,16 +53,16 @@ public class ReviewController {
                 pageable, hotelId, customerId, travelType,
                 minRating, createdAfter, createdBefore, onlyFlagged);
 
-        return ResponseEntity.ok(ApiResponse.success(data, "Reviews fetched successfully"));
+        return ResponseEntity.ok(ApiResponseDTO.success(data, "Reviews fetched successfully"));
     }
 
     @Operation(summary = "Get reviews for a specific hotel")
     @GetMapping("/hotel/{hotelId}")
-    public ResponseEntity<ApiResponse<PagedResponse<ReviewResponseDTO>>> getReviewsByHotel(
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ReviewResponseDTO>>> getReviewsByHotel(
             @PathVariable UUID hotelId,
             @PageableDefault(size = 10) Pageable pageable
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(ApiResponseDTO.success(
                 reviewService.getReviewsByHotelId(hotelId, pageable),
                 "Reviews for hotel " + hotelId + " fetched successfully"
         ));
@@ -70,11 +70,11 @@ public class ReviewController {
 
     @Operation(summary = "Get reviews by a specific customer")
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<ApiResponse<PagedResponse<ReviewResponseDTO>>> getReviewsByCustomer(
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ReviewResponseDTO>>> getReviewsByCustomer(
             @PathVariable UUID customerId,
             @PageableDefault(size = 10) Pageable pageable
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(ApiResponseDTO.success(
                 reviewService.getReviewsByCustomerId(customerId, pageable),
                 "Reviews for customer " + customerId + " fetched successfully"
         ));
@@ -82,10 +82,10 @@ public class ReviewController {
 
     @Operation(summary = "Get average scores for a hotel")
     @GetMapping("/hotel/{hotelId}/average-scores")
-    public ResponseEntity<ApiResponse<Map<String, Double>>> getAverageScores(
+    public ResponseEntity<ApiResponseDTO<Map<String, Double>>> getAverageScores(
             @PathVariable UUID hotelId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(ApiResponseDTO.success(
                 reviewService.getAverageScoresForHotel(hotelId),
                 "Average scores for hotel " + hotelId + " fetched successfully"
         ));
@@ -93,7 +93,7 @@ public class ReviewController {
 
     @Operation(summary = "Create a new review")
     @PostMapping
-    public ResponseEntity<ApiResponse<ReviewResponseDTO>> createReview(
+    public ResponseEntity<ApiResponseDTO<ReviewResponseDTO>> createReview(
             @Valid @RequestBody ReviewRequestDTO request,
             UriComponentsBuilder uriBuilder
     ) {
@@ -106,15 +106,15 @@ public class ReviewController {
 
         return ResponseEntity
                 .created(location)
-                .body(ApiResponse.success(created, "Review created successfully"));
+                .body(ApiResponseDTO.success(created, "Review created successfully"));
     }
 
     @Operation(summary = "Get review by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ReviewResponseDTO>> getReviewById(
+    public ResponseEntity<ApiResponseDTO<ReviewResponseDTO>> getReviewById(
             @PathVariable Long id
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(ApiResponseDTO.success(
                 reviewService.getReviewById(id),
                 "Review fetched successfully"
         ));
@@ -122,12 +122,12 @@ public class ReviewController {
 
     @Operation(summary = "Manager adds a reply to a review")
     @PatchMapping("/{id}/reply")
-    public ResponseEntity<ApiResponse<ReviewResponseDTO>> addManagerReply(
+    public ResponseEntity<ApiResponseDTO<ReviewResponseDTO>> addManagerReply(
             @PathVariable Long id,
             @RequestBody Map<String, String> payload
     ) {
         String reply = payload.get("reply");
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(ApiResponseDTO.success(
                 reviewService.addManagerReply(id, reply),
                 "Reply added successfully"
         ));
@@ -135,10 +135,10 @@ public class ReviewController {
 
     @Operation(summary = "Flag a review as abusive")
     @PatchMapping("/{id}/flag")
-    public ResponseEntity<ApiResponse<ReviewResponseDTO>> flagReview(
+    public ResponseEntity<ApiResponseDTO<ReviewResponseDTO>> flagReview(
             @PathVariable Long id
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(ApiResponseDTO.success(
                 reviewService.flagReview(id),
                 "Review flagged successfully"
         ));
@@ -146,10 +146,10 @@ public class ReviewController {
 
     @Operation(summary = "Admin hides a review")
     @PatchMapping("/{id}/hide")
-    public ResponseEntity<ApiResponse<ReviewResponseDTO>> hideReview(
+    public ResponseEntity<ApiResponseDTO<ReviewResponseDTO>> hideReview(
             @PathVariable Long id
     ) {
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(ApiResponseDTO.success(
                 reviewService.hideReview(id),
                 "Review hidden successfully"
         ));
@@ -157,10 +157,10 @@ public class ReviewController {
 
     @Operation(summary = "Delete a review")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long id) {
+    public ResponseEntity<ApiResponseDTO<Void>> deleteReview(@PathVariable Long id) {
         reviewService.deleteReview(id);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success(null, "Review deleted successfully"));
+                .body(ApiResponseDTO.success(null, "Review deleted successfully"));
     }
 }
