@@ -21,7 +21,7 @@ public class BreakfastPolicySpecification {
 
             sub.select(bp.get("id"))
                     .where(cb.and(
-                            cb.equal(bp.get("hotelId"), root.get("id")),
+                            cb.equal(bp.get("hotel").get("id"), root.get("id")),
                             cb.isTrue(bp.get("breakfastOffered"))
                     ));
 
