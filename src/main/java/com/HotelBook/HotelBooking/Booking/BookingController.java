@@ -20,22 +20,18 @@ import java.util.UUID;
 
 /**
  * BookingController — fixed version.
- *
  * CHANGES FROM ORIGINAL:
  * 1. Removed all @RequestHeader("X-Customer-Id") parameters.
  *    Customer identity is now extracted from the JWT via @AuthenticationPrincipal.
  *    This is secure — the raw header was trivially spoofable by any caller.
- *
  * 2. Added PATCH /{bookingId}/confirm endpoint (was missing from the original).
  *    This completes the required PENDING → CONFIRMED flow.
  *    Note: payment auto-confirms internally via bookingService.confirmBooking(),
  *    but this explicit endpoint allows admin/manager overrides and is required
  *    by the spec.
- *
  * 3. Added @PreAuthorize role guards on all endpoints.
  *    - CUSTOMER: create, list own, get own, cancel own, pay
  *    - ADMIN / HOTEL_MANAGER: confirm, complete, no-show, hotel bookings list
- *
  * 4. Added @Operation + @Tag Swagger annotations for OpenAPI completeness.
  */
 @RestController
@@ -75,13 +71,11 @@ public class BookingController {
 
     /**
      * FIX: This endpoint was missing from the original controller.
-     *
      * The payment flow auto-confirms via bookingService.confirmBooking() when
      * payment succeeds. However, the spec requires an explicit PATCH confirm
      * endpoint so that:
      *   a) Admins can manually confirm bookings (e.g. offline payment)
      *   b) The full flow is testable step-by-step in Postman
-     *
      * Only ADMIN or HOTEL_MANAGER may call this directly.
      * Customers confirm implicitly through the payment endpoint.
      */

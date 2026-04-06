@@ -19,15 +19,12 @@ import java.util.UUID;
 
 /**
  * PaymentController — fixed version.
- *
  * CHANGES FROM ORIGINAL:
  * 1. All @RequestHeader("X-Customer-Id") replaced with @AuthenticationPrincipal User.
  *    Customer identity is now extracted securely from the validated JWT token.
- *
  * 2. Added @PreAuthorize role guards:
  *    - CUSTOMER: pay, refund, get own payment
  *    - ADMIN: get any payment by ID
- *
  * 3. Added @Operation + @Tag Swagger annotations.
  */
 @RestController
