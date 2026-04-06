@@ -56,7 +56,7 @@ public class RoomAvailabilitySpecification {
             // has enough quantity, and has zero fully-blocked dates
             roomSub.select(roomRoot.get("id"))
                     .where(cb.and(
-                            cb.equal(roomRoot.get("hotelId"), root.get("id")),
+                            cb.equal(roomRoot.get("hotel").get("id"), root.get("id")),
                             cb.isTrue(roomRoot.get("isActive")),
                             cb.greaterThanOrEqualTo(roomRoot.get("quantity"), roomsNeeded),
                             cb.equal(blockedDateCount, 0L)

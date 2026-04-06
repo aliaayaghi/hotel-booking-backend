@@ -26,7 +26,7 @@ public class RoomSpecification {
             Root<Room> room = sub.from(Room.class);
 
             List<Predicate> preds = new ArrayList<>();
-            preds.add(cb.equal(room.get("hotelId"), root.get("id")));
+            preds.add(cb.equal(room.get("hotel").get("id"), root.get("id")));
             preds.add(cb.isTrue(room.get("isActive")));
             preds.add(cb.greaterThanOrEqualTo(room.get("maxAdults"), adults));
 
@@ -61,7 +61,7 @@ public class RoomSpecification {
             Root<Room> room = sub.from(Room.class);
             sub.select(room.get("id"))
                     .where(cb.and(
-                            cb.equal(room.get("hotelId"), root.get("id")),
+                            cb.equal(room.get("hotel").get("id"), root.get("id")),
                             cb.isTrue(room.get("isActive")),
                             room.get("type").in(types)
                     ));
@@ -89,7 +89,7 @@ public class RoomSpecification {
             Root<Room> room = sub.from(Room.class);
             sub.select(room.get("id"))
                     .where(cb.and(
-                            cb.equal(room.get("hotelId"), root.get("id")),
+                            cb.equal(room.get("hotel").get("id"), root.get("id")),
                             cb.isTrue(room.get("isActive")),
                             room.get("bedType").in(beds)
                     ));
@@ -117,7 +117,7 @@ public class RoomSpecification {
             Root<Room> room = sub.from(Room.class);
             sub.select(room.get("id"))
                     .where(cb.and(
-                            cb.equal(room.get("hotelId"), root.get("id")),
+                            cb.equal(room.get("hotel").get("id"), root.get("id")),
                             cb.isTrue(room.get("isActive")),
                             room.get("view").in(roomViews)
                     ));
@@ -135,7 +135,7 @@ public class RoomSpecification {
             Root<Room> room = priceSub.from(Room.class);
             priceSub.select(cb.min(room.get("price")))
                     .where(cb.and(
-                            cb.equal(room.get("hotelId"), root.get("id")),
+                            cb.equal(room.get("hotel").get("id"), root.get("id")),
                             cb.isTrue(room.get("isActive"))
                     ));
 

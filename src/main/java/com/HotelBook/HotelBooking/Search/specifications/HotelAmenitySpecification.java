@@ -26,7 +26,7 @@ public class HotelAmenitySpecification {
                         Root<HotelAmenity> ha = sub.from(HotelAmenity.class);
                         sub.select(ha.get("id"))
                                 .where(cb.and(
-                                        cb.equal(ha.get("hotelId"), root.get("id")),
+                                        cb.equal(ha.get("hotel").get("id"), root.get("id")),
                                         cb.equal(
                                                 cb.lower(ha.get("name")),
                                                 name.toLowerCase().trim()
@@ -56,7 +56,7 @@ public class HotelAmenitySpecification {
                             Root<HotelAmenity> ha = sub.from(HotelAmenity.class);
                             sub.select(ha.get("id"))
                                     .where(cb.and(
-                                            cb.equal(ha.get("hotelId"), root.get("id")),
+                                            cb.equal(ha.get("hotel").get("id"), root.get("id")),
                                             cb.equal(ha.get("category"), category)
                                     ));
                             return cb.exists(sub);
