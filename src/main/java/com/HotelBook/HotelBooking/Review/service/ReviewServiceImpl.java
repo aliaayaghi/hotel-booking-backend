@@ -1,7 +1,6 @@
 package com.HotelBook.HotelBooking.Review.service;
 
-
-import com.HotelBook.HotelBooking.Review.Entity.*;
+import com.HotelBook.HotelBooking.Review.Entity.Review;
 import com.HotelBook.HotelBooking.Review.dto.ReviewRequestDTO;
 import com.HotelBook.HotelBooking.Review.dto.ReviewResponseDTO;
 import com.HotelBook.HotelBooking.Common.exception.ReviewAlreadyExistsException;
@@ -54,17 +53,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewResponseDTO createReview(ReviewRequestDTO request) {
-        // Check if review already exists for this booking
         if (reviewRepository.existsByBookingId(request.getBookingId())) {
             throw new ReviewAlreadyExistsException(request.getBookingId());
         }
 
-
-
         Hotel hotel = hotelRepository.findById(request.getHotelId())
                 .orElseThrow(() -> new RuntimeException("Hotel not found: " + request.getHotelId()));
-
-
 
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found: " + request.getCustomerId()));
@@ -72,18 +66,14 @@ public class ReviewServiceImpl implements ReviewService {
         Booking booking = bookingRepository.findById(request.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + request.getBookingId()));
 
-        // Map DTO to entity
         Review review = ReviewMapper.toEntity(request, hotel, customer, booking);
-
-        // Save
         Review saved = reviewRepository.save(review);
-
         return ReviewMapper.toDTO(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ReviewResponseDTO getReviewById(Long id) {
+    public ReviewResponseDTO getReviewById(UUID id) {          // ← FIX: was Long
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFoundException(id));
         return ReviewMapper.toDTO(review);
@@ -103,35 +93,19 @@ public class ReviewServiceImpl implements ReviewService {
     ) {
         validateSort(pageable);
 
-        // Build dynamic specification
         Specification<Review> spec = Specification.where(ReviewSpecifications.notHidden());
 
-        if (hotelId != null) {
-            spec = spec.and(ReviewSpecifications.hasHotelId(hotelId));
-        }
-        if (customerId != null) {
-            spec = spec.and(ReviewSpecifications.hasCustomerId(customerId));
-        }
-        if (travelType != null) {
-            spec = spec.and(ReviewSpecifications.hasTravelType(travelType));
-        }
-        if (minRating != null) {
-            spec = spec.and(ReviewSpecifications.ratingGreaterThanOrEqual(minRating));
-        }
-        if (createdAfter != null || createdBefore != null) {
+        if (hotelId != null)    spec = spec.and(ReviewSpecifications.hasHotelId(hotelId));
+        if (customerId != null) spec = spec.and(ReviewSpecifications.hasCustomerId(customerId));
+        if (travelType != null) spec = spec.and(ReviewSpecifications.hasTravelType(travelType));
+        if (minRating != null)  spec = spec.and(ReviewSpecifications.ratingGreaterThanOrEqual(minRating));
+        if (createdAfter != null || createdBefore != null)
             spec = spec.and(ReviewSpecifications.createdBetween(createdAfter, createdBefore));
-        }
-        if (Boolean.TRUE.equals(onlyFlagged)) {
+        if (Boolean.TRUE.equals(onlyFlagged))
             spec = spec.and(ReviewSpecifications.onlyFlagged());
-        }
 
         Page<Review> page = reviewRepository.findAll(spec, pageable);
-
-        var content = page.getContent()
-                .stream()
-                .map(ReviewMapper::toDTO)
-                .toList();
-
+        var content = page.getContent().stream().map(ReviewMapper::toDTO).toList();
         return PagedResponse.from(page, content);
     }
 
@@ -139,12 +113,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public PagedResponse<ReviewResponseDTO> getReviewsByHotelId(UUID hotelId, Pageable pageable) {
         Page<Review> page = reviewRepository.findByHotelId(hotelId, pageable);
-
-        var content = page.getContent()
-                .stream()
-                .map(ReviewMapper::toDTO)
-                .toList();
-
+        var content = page.getContent().stream().map(ReviewMapper::toDTO).toList();
         return PagedResponse.from(page, content);
     }
 
@@ -152,51 +121,37 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public PagedResponse<ReviewResponseDTO> getReviewsByCustomerId(UUID customerId, Pageable pageable) {
         Page<Review> page = reviewRepository.findByCustomerId(customerId, pageable);
-
-        var content = page.getContent()
-                .stream()
-                .map(ReviewMapper::toDTO)
-                .toList();
-
+        var content = page.getContent().stream().map(ReviewMapper::toDTO).toList();
         return PagedResponse.from(page, content);
     }
 
     @Override
-    public ReviewResponseDTO addManagerReply(Long reviewId, String managerReply) {
+    public ReviewResponseDTO addManagerReply(UUID reviewId, String managerReply) {  // ← FIX: was Long
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
         review.setManagerReply(managerReply);
         review.setRepliedAt(LocalDateTime.now());
-
-        Review updated = reviewRepository.save(review);
-        return ReviewMapper.toDTO(updated);
+        return ReviewMapper.toDTO(reviewRepository.save(review));
     }
 
     @Override
-    public ReviewResponseDTO flagReview(Long reviewId) {
+    public ReviewResponseDTO flagReview(UUID reviewId) {       // ← FIX: was Long
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
         review.setFlagged(true);
-
-        Review updated = reviewRepository.save(review);
-        return ReviewMapper.toDTO(updated);
+        return ReviewMapper.toDTO(reviewRepository.save(review));
     }
 
     @Override
-    public ReviewResponseDTO hideReview(Long reviewId) {
+    public ReviewResponseDTO hideReview(UUID reviewId) {       // ← FIX: was Long
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(reviewId));
-
         review.setHidden(true);
-
-        Review updated = reviewRepository.save(review);
-        return ReviewMapper.toDTO(updated);
+        return ReviewMapper.toDTO(reviewRepository.save(review));
     }
 
     @Override
-    public void deleteReview(Long id) {
+    public void deleteReview(UUID id) {                        // ← FIX: was Long
         if (!reviewRepository.existsById(id)) {
             throw new ReviewNotFoundException(id);
         }
@@ -208,11 +163,11 @@ public class ReviewServiceImpl implements ReviewService {
     public Map<String, Double> getAverageScoresForHotel(UUID hotelId) {
         Map<String, Double> scores = new HashMap<>();
         scores.put("cleanliness", reviewRepository.getAverageCleanlinessScore(hotelId));
-        scores.put("location", reviewRepository.getAverageLocationScore(hotelId));
-        scores.put("service", reviewRepository.getAverageServiceScore(hotelId));
-        scores.put("value", reviewRepository.getAverageValueScore(hotelId));
-        scores.put("comfort", reviewRepository.getAverageComfortScore(hotelId));
-        scores.put("overall", reviewRepository.getAverageRatingForHotel(hotelId));
+        scores.put("location",    reviewRepository.getAverageLocationScore(hotelId));
+        scores.put("service",     reviewRepository.getAverageServiceScore(hotelId));
+        scores.put("value",       reviewRepository.getAverageValueScore(hotelId));
+        scores.put("comfort",     reviewRepository.getAverageComfortScore(hotelId));
+        scores.put("overall",     reviewRepository.getAverageRatingForHotel(hotelId));
         return scores;
     }
 
@@ -224,9 +179,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     private void validateSort(Pageable pageable) {
         for (Sort.Order order : pageable.getSort()) {
-            String field = order.getProperty();
-            if (!ALLOWED_SORT_FIELDS.contains(field)) {
-                throw new RuntimeException("Invalid sort field: " + field);
+            if (!ALLOWED_SORT_FIELDS.contains(order.getProperty())) {
+                throw new RuntimeException("Invalid sort field: " + order.getProperty());
             }
         }
     }

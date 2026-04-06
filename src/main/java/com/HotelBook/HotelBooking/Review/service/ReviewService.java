@@ -1,6 +1,5 @@
 package com.HotelBook.HotelBooking.Review.service;
 
-
 import com.HotelBook.HotelBooking.Review.Entity.Review;
 import com.HotelBook.HotelBooking.Review.dto.ReviewRequestDTO;
 import com.HotelBook.HotelBooking.Review.dto.ReviewResponseDTO;
@@ -11,11 +10,16 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * ReviewService — fixed version.
+ * BUG FIXED: All method parameters typed as {@code Long} changed to {@code UUID}
+ * to match the Review entity's primary key type (@GeneratedValue UUID).
+ */
 public interface ReviewService {
 
     ReviewResponseDTO createReview(ReviewRequestDTO request);
 
-    ReviewResponseDTO getReviewById(Long id);
+    ReviewResponseDTO getReviewById(UUID id);          // ← FIX: was Long
 
     PagedResponse<ReviewResponseDTO> listReviews(
             Pageable pageable,
@@ -32,13 +36,13 @@ public interface ReviewService {
 
     PagedResponse<ReviewResponseDTO> getReviewsByCustomerId(UUID customerId, Pageable pageable);
 
-    ReviewResponseDTO addManagerReply(Long reviewId, String managerReply);
+    ReviewResponseDTO addManagerReply(UUID reviewId, String managerReply);  // ← FIX: was Long
 
-    ReviewResponseDTO flagReview(Long reviewId);
+    ReviewResponseDTO flagReview(UUID reviewId);       // ← FIX: was Long
 
-    ReviewResponseDTO hideReview(Long reviewId);
+    ReviewResponseDTO hideReview(UUID reviewId);       // ← FIX: was Long
 
-    void deleteReview(Long id);
+    void deleteReview(UUID id);                        // ← FIX: was Long
 
     Map<String, Double> getAverageScoresForHotel(UUID hotelId);
 
