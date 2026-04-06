@@ -20,7 +20,7 @@ public class PetPolicySpecification {
 
             sub.select(pp.get("id"))
                     .where(cb.and(
-                            cb.equal(pp.get("hotelId"), root.get("id")),
+                            cb.equal(pp.get("hotel").get("id"), root.get("id")),
                             cb.isTrue(pp.get("petsAllowed"))
                     ));
 

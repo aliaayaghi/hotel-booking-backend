@@ -25,7 +25,7 @@ public class HotelAccessibilitySpecification {
 
             sub.select(ha.get("id"))
                     .where(cb.and(
-                            cb.equal(ha.get("hotelId"), root.get("id")),
+                            cb.equal(ha.get("hotel").get("id"), root.get("id")),
                             ha.get("level").in(
                                     AccessibilityLevel.FULL,
                                     AccessibilityLevel.PARTIAL

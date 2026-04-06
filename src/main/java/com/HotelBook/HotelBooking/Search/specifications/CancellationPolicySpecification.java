@@ -25,7 +25,7 @@ public class CancellationPolicySpecification {
 
             sub.select(cp.get("id"))
                     .where(cb.and(
-                            cb.equal(cp.get("hotelId"), root.get("id")),
+                            cb.equal(cp.get("hotel").get("id"), root.get("id")),
                             cb.greaterThan(cp.get("refundPercentage"), 0)
                     ));
 
