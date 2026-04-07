@@ -21,6 +21,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -96,7 +98,15 @@ public class GlobalExceptionHandler {
                 "Validation failed: " + fieldErrors.size() + " error(s)",
                 fieldErrors);
     }
-
+    @ExceptionHandler(ReviewAlreadyExistsException.class)
+    public ResponseEntity<Object> handleReviewExistsException(ReviewAlreadyExistsException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", 409); // Conflict
+        body.put("error", "Conflict");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
     /**
      * @Validated failures on @PathVariable / @RequestParam.
      */
