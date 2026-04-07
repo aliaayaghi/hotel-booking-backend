@@ -76,8 +76,6 @@ public class User implements UserDetails {
         return this.email;
     }
 
-
-
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -96,5 +94,14 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.isActive;
+    }
+
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
     }
 }

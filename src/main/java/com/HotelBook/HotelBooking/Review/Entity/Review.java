@@ -87,6 +87,7 @@ public class Review {
     @Column(nullable = false)
     private boolean isHidden = false;
 
+
     public enum TravelType {
         SOLO, COUPLE, FAMILY, BUSINESS, GROUP
     }
@@ -165,6 +166,8 @@ public class Review {
 
     public boolean isHidden() { return isHidden; }
     public void setHidden(boolean hidden) { isHidden = hidden; }
+
+
 
     @Override
     public boolean equals(Object o) {
