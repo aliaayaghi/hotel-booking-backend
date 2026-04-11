@@ -105,26 +105,26 @@ public class Hotel {
     @UpdateTimestamp
     private Instant updatedAt;
 
-    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private BreakfastPolicy breakfastPolicy;
 
-    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private PetPolicy petPolicy;
 
-    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HotelAmenity> amenities;
 
-    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private CheckInPolicy checkInPolicy;
 
-    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HotelPhoto> photos;
 
-    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HotelAccessibility> accessibilityFeatures;
 
     // Hotel.java
     @Builder.Default
-    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms = new ArrayList<>();
 }
