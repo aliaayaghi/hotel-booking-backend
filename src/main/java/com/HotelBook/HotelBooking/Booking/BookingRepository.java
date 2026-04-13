@@ -1,6 +1,7 @@
 package com.HotelBook.HotelBooking.Booking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -58,4 +59,12 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     List<Booking> findTodaysDepartures(
             @Param("hotelId") UUID hotelId,
             @Param("today")   LocalDate today);
+
+    // Add these two methods
+    @Query("SELECT b.id FROM Booking b WHERE b.room.id IN :roomIds")
+    List<UUID> findBookingIdsByRoomIds(@Param("roomIds") List<UUID> roomIds);
+
+    @Modifying
+    @Query("DELETE FROM Booking b WHERE b.room.id IN :roomIds")
+    void deleteByRoomIdIn(@Param("roomIds") List<UUID> roomIds);
 }

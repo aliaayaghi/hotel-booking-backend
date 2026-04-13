@@ -2,6 +2,7 @@ package com.HotelBook.HotelBooking.Hotel;
 
 import com.HotelBook.HotelBooking.HotelAccessibility.HotelAccessibility;
 import com.HotelBook.HotelBooking.HotelAmenity.HotelAmenity;
+import com.HotelBook.HotelBooking.HotelLocation.Location;
 import com.HotelBook.HotelBooking.HotelPhoto.HotelPhoto;
 import com.HotelBook.HotelBooking.HotelPolicy.BreakfastPolicy;
 import com.HotelBook.HotelBooking.HotelPolicy.CheckInPolicy;
@@ -127,4 +128,6 @@ public class Hotel {
     @Builder.Default
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms = new ArrayList<>();
+    @OneToOne(mappedBy = "hotel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Location location;
 }

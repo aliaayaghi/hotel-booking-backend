@@ -36,6 +36,7 @@ public class MockEmailSender {
      */
     public void send(String toEmail, String subject, String body) {
         log.info("""
+                
                 ╔══════════════════════════════════════════════════════════╗
                 ║  [MOCK EMAIL SENT]
                 ║  To:      {}

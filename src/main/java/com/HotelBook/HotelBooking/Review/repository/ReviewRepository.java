@@ -7,9 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,4 +51,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID>, JpaSpecif
 
     @Query("SELECT AVG(r.comfortScore) FROM Review r WHERE r.hotel.id = :hotelId AND r.isHidden = false")
     Double getAverageComfortScore(@Param("hotelId") UUID hotelId);
+
+    @Modifying
+    @Query("DELETE FROM Review r WHERE r.booking.id IN :bookingIds")
+    void deleteByBookingIdIn(@Param("bookingIds") List<UUID> bookingIds);
 }

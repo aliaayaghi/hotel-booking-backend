@@ -1,6 +1,7 @@
 package com.HotelBook.HotelBooking.HotelLocation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -42,4 +43,7 @@ public interface LocationRepository extends JpaRepository<Location, UUID> {
             @Param("minLng") double minLng,
             @Param("maxLng") double maxLng
     );
-}
+
+    @Modifying
+    @Query("DELETE FROM Location l WHERE l.hotel.id = :hotelId")
+    void deleteByHotelId(@Param("hotelId") UUID hotelId);}

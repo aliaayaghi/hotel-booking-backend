@@ -1,7 +1,12 @@
 package com.HotelBook.HotelBooking.Admin;
 
 
+import com.HotelBook.HotelBooking.Booking.BookingRepository;
 import com.HotelBook.HotelBooking.Hotel.*;
+import com.HotelBook.HotelBooking.HotelLocation.LocationRepository;
+import com.HotelBook.HotelBooking.Payment.PaymentRepository;
+import com.HotelBook.HotelBooking.Review.repository.ReviewRepository;
+import com.HotelBook.HotelBooking.Room.RoomRepository;
 import com.HotelBook.HotelBooking.User.dto.response.UserResponse;
 import com.HotelBook.HotelBooking.User.entity.User;
 import com.HotelBook.HotelBooking.User.enums.UserRole;
@@ -15,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -26,6 +32,11 @@ public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final HotelMapper hotelMapper;
     private final UserMapper userMapper;
+    private final BookingRepository bookingRepository;
+    private final RoomRepository roomRepository;
+    private final PaymentRepository paymentRepository;
+    private final ReviewRepository reviewRepository;
+    private final LocationRepository locationRepository;
 
     // ── Hotel management ──────────────────────────────────────────────────────
 
@@ -94,6 +105,25 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public void deleteHotel(UUID hotelId) {
         Hotel hotel = findHotelById(hotelId);
+
+        List<UUID> roomIds = roomRepository.findByHotelId(hotelId)
+                .stream()
+                .map(com.HotelBook.HotelBooking.Room.Room::getId)
+                .collect(java.util.stream.Collectors.toList());
+
+        if (!roomIds.isEmpty()) {
+            List<UUID> bookingIds = bookingRepository.findBookingIdsByRoomIds(roomIds);
+
+            if (!bookingIds.isEmpty()) {
+                reviewRepository.deleteByBookingIdIn(bookingIds);   // 1. reviews
+                paymentRepository.deleteByBookingIdIn(bookingIds);  // 2. payments
+                bookingRepository.deleteByRoomIdIn(roomIds);        // 3. bookings
+            }
+            // rooms deleted by cascade below
+        }
+
+        // 4. hotel cascade deletes: rooms, location, photos,
+        //    amenities, policies, accessibility features
         hotelRepository.delete(hotel);
         log.info("Admin hard-deleted hotel: {} ({})", hotel.getName(), hotelId);
     }
