@@ -15,6 +15,7 @@ public class SearchResponseDTO {
     private String name;
     private int starRating;
     private String type;
+    private String coverPhotoUrl;
 
     // Location — from Hotel entity directly (city, countryCode, address, lat, lng)
     private String city;

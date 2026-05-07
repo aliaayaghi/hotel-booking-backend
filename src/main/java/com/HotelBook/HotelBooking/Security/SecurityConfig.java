@@ -42,6 +42,7 @@ public class SecurityConfig {
     private static final String[] PUBLIC_GET_PATHS = {
             "/api/hotels",
             "/api/hotels/**",
+            "/api/reviews/hotel/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api-docs/**",
@@ -83,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/hotels").hasRole("HOTEL_MANAGER")
                         .requestMatchers(HttpMethod.PUT,  "/api/hotels/**").hasRole("HOTEL_MANAGER")
                         .requestMatchers("/api/customers/me/**").hasRole("CUSTOMER")
+                        .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

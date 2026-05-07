@@ -24,6 +24,8 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.HotelBook.HotelBooking.HotelPhoto.HotelPhoto;
+import com.HotelBook.HotelBooking.HotelPhoto.HotelPhotoRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -47,6 +49,7 @@ public class SearchServiceImpl implements SearchService {
     private final BreakfastPolicyRepository breakfastPolicyRepository;
     private final PetPolicyRepository petPolicyRepository;
     private final CancellationPolicyRepository cancellationPolicyRepository;
+    private final HotelPhotoRepository hotelPhotoRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -120,6 +123,16 @@ public class SearchServiceImpl implements SearchService {
                                             LocalDate checkOut) {
         UUID hotelId = hotel.getId();
 
+        String coverPhotoUrl = hotelPhotoRepository
+                .findFirstByHotelIdAndIsCoverTrue(hotelId)
+                .map(HotelPhoto::getUrl)
+                .orElseGet(() -> hotelPhotoRepository
+                        .findByHotelIdOrderByOrderAsc(hotelId)
+                        .stream()
+                        .findFirst()
+                        .map(HotelPhoto::getUrl)
+                        .orElse(null));
+
         // Load rooms from repository — Hotel entity has no getRooms()
         List<Room> activeRooms = roomRepository
                 .findByHotelIdAndIsActiveTrue(hotelId);
@@ -170,6 +183,7 @@ public class SearchServiceImpl implements SearchService {
                 .name(hotel.getName())
                 .starRating(hotel.getStarRating())
                 .type(hotel.getType() != null ? hotel.getType().name() : null)
+                .coverPhotoUrl(coverPhotoUrl)
                 .city(hotel.getCity())
                 .countryCode(hotel.getCountryCode())
                 .address(hotel.getAddress())

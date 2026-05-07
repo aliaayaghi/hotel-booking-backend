@@ -198,8 +198,18 @@ public class RoomServiceImpl implements RoomService {
         RoomResponseDTO dto = new RoomResponseDTO();
         setBaseFields(dto, room);
 
-        // Omit all collections in list responses — set to empty to avoid null in JSON
-        dto.setPhotos(Collections.emptyList());
+        // Include room photos in list responses so the frontend can show room images.
+        dto.setPhotos(room.getPhotos() == null ? Collections.emptyList() :
+                room.getPhotos().stream().map(p -> {
+                    RoomResponseDTO.PhotoDTO d = new RoomResponseDTO.PhotoDTO();
+                    d.setId(p.getId());
+                    d.setUrl(p.getUrl());
+                    d.setDisplayOrder(p.getDisplayOrder());
+                    d.setCaption(p.getCaption());
+                    return d;
+                }).collect(Collectors.toList()));
+
+        // Keep the other nested collections omitted in list responses for now.
         dto.setAmenities(Collections.emptyList());
         dto.setAccessibilities(Collections.emptyList());
         dto.setPricingRules(Collections.emptyList());
